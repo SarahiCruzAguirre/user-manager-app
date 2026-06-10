@@ -21,12 +21,6 @@ import mongoose from "mongoose"
 // The connection string lives in .env.local (never commit that file).
 const MONGODB_URI = process.env.MONGODB_URI as string
 
-if (!MONGODB_URI) {
-  throw new Error(
-    "MONGODB_URI is missing. Add it to your .env.local file — see .env.example for reference."
-  )
-}
-
 // We attach the cached connection to Node's global so hot-reload in dev
 // doesn't open a new connection on every file change.
 type MongooseCache = {
@@ -44,6 +38,12 @@ const cached: MongooseCache = global.mongooseCache ?? { conn: null, promise: nul
 global.mongooseCache = cached
 
 export async function connectDB() {
+  if (!MONGODB_URI) {
+    throw new Error(
+      "MONGODB_URI is missing. Add it to your Vercel Environment Variables or local .env file."
+    )
+  }
+
   // Return the existing connection immediately — no work needed.
   if (cached.conn) return cached.conn
 
