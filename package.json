@@ -1,38 +1,37 @@
 {
-  "name": "user-manager-app",
+  "name": "user-manager",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@heroui/react": "^3.1.0",
-    "bcryptjs": "^3.0.3",
-    "framer-motion": "^12.40.0",
-    "jsonwebtoken": "^9.0.3",
-    "lucide-react": "^1.17.0",
-    "mongoose": "^9.6.3",
-    "next": "16.2.7",
-    "nodemailer": "^8.0.10",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "next": "14.2.5",
+    "react": "^18",
+    "react-dom": "^18",
+    "mongoose": "^8.4.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.14",
+    "@heroui/react": "2.8.10",
+    "framer-motion": "^11.3.0",
+    "lucide-react": "^0.395.0",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.0",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.10",
+    "typescript": "^5",
     "@types/node": "^20",
-    "@types/nodemailer": "^8.0.0",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "autoprefixer": "^10.5.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.7",
-    "postcss": "^8.5.15",
-    "tailwindcss": "^4.3.0",
-    "typescript": "^5"
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/nodemailer": "^6.4.15",
+    "@types/zxcvbn": "^4.4.4",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8",
+    "autoprefixer": "^10.0.1"
   }
 }

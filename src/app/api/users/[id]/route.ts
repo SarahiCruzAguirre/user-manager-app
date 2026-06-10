@@ -1,70 +1,92 @@
-import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import { User } from "@/models/User";
-import bcrypt from "bcryptjs";
+// app/api/users/[id]/route.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// Handles:
+//   PUT    /api/users/:id  →  update a user
+//   DELETE /api/users/:id  →  delete a user
+//
+// The [id] folder name tells Next.js this is a dynamic segment.
+// The id value arrives in the second argument as params.id.
+// ─────────────────────────────────────────────────────────────────────────────
 
-interface Params {
-  params: { id: string };
+import { NextRequest, NextResponse } from "next/server"
+import { connectDB } from "@/lib/mongodb"
+import { verifyToken, getTokenFromRequest } from "@/lib/auth"
+import User from "@/models/User"
+
+// Context is the second argument for dynamic routes — it carries the URL params.
+interface RouteContext {
+  params: { id: string }
 }
 
-// PUT: Modificar los datos de un usuario existente
-export async function PUT(request: Request, { params }: Params) {
-  try {
-    await connectDB();
-    const { id } = params;
-    const body = await request.json();
+// ─── PUT /api/users/:id ───────────────────────────────────────────────────────
+export async function PUT(req: NextRequest, { params }: RouteContext) {
+  const token = getTokenFromRequest(req)
+  const payload = token ? verifyToken(token) : null
 
-    // Buscamos al usuario existente en la base de datos
-    const user = await User.findById(id);
-    if (!user) {
-        return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 },
-        );
-    }
-
-    // Si la actualización incluye una contraseña nueva, la hasheamos manualmente aquí antes de guardar
-    if (body.password && body.password.trim() !== "") {
-      const salt = await bcrypt.genSalt(10);
-      body.password = await bcrypt.hash(body.password, salt);
-    } else {
-      // Si viene vacía, removemos el campo para no sobreescribir la contraseña actual con texto vacío
-      delete body.password;
-    }
-
-    // Actualizamos el documento con los nuevos datos recibidos
-    const updatedUser = await User.findByIdAndUpdate(id, body, {
-      new: true,
-    }).select("-password");
-
-    return NextResponse.json(updatedUser);
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { error: "Error al actualizar la información" },
-      { status: 400 },
-    );
+  if (!payload || payload.role !== "admin") {
+    return NextResponse.json({ error: "Acceso denegado" }, { status: 403 })
   }
-}
 
-// DELETE: Remover permanentemente un usuario por su ID
-export async function DELETE(request: Request, { params }: Params) {
-  try {
-    await connectDB();
-    const { id } = params;
+  const body = await req.json()
+  const { nombre, cc, email, role, password } = body
 
-    const deletedUser = await User.findByIdAndDelete(id);
-    if (!deletedUser) {
-      return NextResponse.json(
-        { error: "El usuario a eliminar no existe" },
-        { status: 404 },
-      );
-    }
+  await connectDB()
 
-    return NextResponse.json({ message: "Usuario eliminado correctamente" });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Error al ejecutar la eliminación" },
-      { status: 400 },
-    );
+  // Build the update object dynamically — we only update fields that were sent.
+  // This way a PATCH-like update works even though we're using PUT.
+  const updates: Record<string, string> = {}
+  if (nombre) updates.nombre = nombre
+  if (cc)     updates.cc     = cc
+  if (email)  updates.email  = email
+  if (role)   updates.role   = role
+
+  // If a new password was provided, hash it before storing.
+  // We call bcrypt directly here because we're using findByIdAndUpdate, which
+  // bypasses Mongoose's pre-save hook (pre-save only runs on .save()).
+  if (password) {
+    const bcrypt = await import("bcryptjs")
+    const salt = await bcrypt.genSalt(12)
+    updates.password = await bcrypt.hash(password, salt)
   }
+
+  const updated = await User.findByIdAndUpdate(
+    params.id,
+    { $set: updates },
+    {
+      new: true,            // return the document AFTER the update, not before
+      runValidators: true,  // run Schema validators on the updated fields
+    }
+  ).select("-password")
+
+  if (!updated) {
+    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 })
+  }
+
+  return NextResponse.json({ user: updated })
 }
+
+// ─── DELETE /api/users/:id ────────────────────────────────────────────────────
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
+  const token = getTokenFromRequest(req)
+  const payload = token ? verifyToken(token) : null
+
+  if (!payload || payload.role !== "admin") {
+    return NextResponse.json({ error: "Acceso denegado" }, { status: 403 })
+  }
+
+  if (payload.userId === params.id) {
+    return NextResponse.json({ error: "No puedes eliminar tu propia cuenta" }, { status: 400 })
+  }
+
+  await connectDB()
+
+  const deleted = await User.findByIdAndDelete(params.id)
+
+  if (!deleted) {
+    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 })
+  }
+
+  // 204 No Content — success, but there's nothing to return.
+  return new NextResponse(null, { status: 204 })
+}
+
