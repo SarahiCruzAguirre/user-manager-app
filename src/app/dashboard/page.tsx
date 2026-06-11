@@ -289,7 +289,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs font-mono uppercase text-slate-400">Identificador de Usuario (ID)</span>
-                  <p className="text-sm text-slate-500 font-mono text-xs truncate" title={user.id}>{user.id}</p>
+                  <p className="text-slate-500 font-mono text-xs truncate" title={user.id}>{user.id}</p>
                 </div>
               </div>
             </div>
