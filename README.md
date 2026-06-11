@@ -2,6 +2,8 @@
 
 A premium, full-stack Next.js 14 user management dashboard featuring role-based access control, secure JSON Web Token (JWT) sessions, password hashing, comprehensive User CRUD operations, and Google OAuth2 mailer integrations.
 
+### 🔗 Live Demo / Production URL: [https://user-manager-app-weld.vercel.app](https://user-manager-app-weld.vercel.app)
+
 ---
 
 ## 🎯 Target User Story
