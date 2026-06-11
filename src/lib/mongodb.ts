@@ -18,8 +18,7 @@
 
 import mongoose from "mongoose"
 
-// The connection string lives in .env.local (never commit that file).
-const MONGODB_URI = process.env.MONGODB_URI as string
+const MONGODB_URI = (process.env.MONGODB_URI || process.env.mongodb_uri || process.env.MONGODB_URL || process.env.mongodb_url) as string
 
 // We attach the cached connection to Node's global so hot-reload in dev
 // doesn't open a new connection on every file change.
