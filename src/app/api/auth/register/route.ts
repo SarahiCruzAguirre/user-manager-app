@@ -12,42 +12,47 @@ import { signToken } from "@/lib/auth"
 import User from "@/models/User"
 
 export async function POST(req: NextRequest) {
-  const { nombre, cc, email, password, role } = await req.json()
+  try {
+    const { nombre, cc, email, password, role } = await req.json()
 
-  if (!nombre || !cc || !email || !password) {
-    return NextResponse.json({ error: "Todos los campos son obligatorios" }, { status: 400 })
-  }
+    if (!nombre || !cc || !email || !password) {
+      return NextResponse.json({ error: "Todos los campos son obligatorios" }, { status: 400 })
+    }
 
-  await connectDB()
+    await connectDB()
 
-  const existing = await User.findOne({ $or: [{ email }, { cc }] })
-  if (existing) {
-    const field = existing.email === email ? "correo electrónico" : "número de cédula"
-    return NextResponse.json({ error: `Este ${field} ya está registrado` }, { status: 409 })
-  }
+    const existing = await User.findOne({ $or: [{ email }, { cc }] })
+    if (existing) {
+      const field = existing.email === email ? "correo electrónico" : "número de cédula"
+      return NextResponse.json({ error: `Este ${field} ya está registrado` }, { status: 409 })
+    }
 
-  // Se permite el registro con el rol elegido ("user" o "admin"), por defecto "user"
-  const user = await User.create({ nombre, cc, email, password, role: role || "user" })
+    // Se permite el registro con el rol elegido ("user" o "admin"), por defecto "user"
+    const user = await User.create({ nombre, cc, email, password, role: role || "user" })
 
-  const token = signToken({
-    userId: user._id.toString(),
-    email: user.email,
-    role: user.role,
-    nombre: user.nombre,
-    cc: user.cc,
-  })
+    const token = signToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      nombre: user.nombre,
+      cc: user.cc,
+    })
 
-  return NextResponse.json(
-    {
-      token,
-      user: {
-        id: user._id.toString(),
-        nombre: user.nombre,
-        email: user.email,
-        role: user.role,
-        cc: user.cc,
+    return NextResponse.json(
+      {
+        token,
+        user: {
+          id: user._id.toString(),
+          nombre: user.nombre,
+          email: user.email,
+          role: user.role,
+          cc: user.cc,
+        },
       },
-    },
-    { status: 201 }
-  )
+      { status: 201 }
+    )
+  } catch (err: any) {
+    console.error("Error en registro:", err)
+    return NextResponse.json({ error: err.message || "Error interno del servidor" }, { status: 500 })
+  }
 }

@@ -9,7 +9,14 @@ export const authService = {
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ email, password }),
     })
-    const data = await res.json()
+    
+    let data: any
+    try {
+      data = await res.json()
+    } catch (err) {
+      throw new Error(`Error del servidor (${res.status}): No se pudo procesar la respuesta.`)
+    }
+
     if (!res.ok) throw new Error(data.error ?? "Error al iniciar sesión")
     return data as { token: string; user: { id: string; nombre: string; email: string; role: "user" | "admin"; cc: string } }
   },
@@ -20,7 +27,14 @@ export const authService = {
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify(payload),
     })
-    const data = await res.json()
+
+    let data: any
+    try {
+      data = await res.json()
+    } catch (err) {
+      throw new Error(`Error del servidor (${res.status}): No se pudo procesar la respuesta.`)
+    }
+
     if (!res.ok) throw new Error(data.error ?? "Error al registrar la cuenta")
     return data as { token: string; user: { id: string; nombre: string; email: string; role: "user" | "admin"; cc: string } }
   },
