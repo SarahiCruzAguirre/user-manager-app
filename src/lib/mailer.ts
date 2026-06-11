@@ -36,7 +36,7 @@ export async function sendWelcomeEmail(
   nombre: string,
   password: string   // plain-text password — only used here, never stored
 ) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://user-manager-app-weld.vercel.app"
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://user-manager-app-weld.vercel.app"
 
   // mailOptions describes the email we want to send.
   const mailOptions = {
@@ -146,7 +146,7 @@ function buildWelcomeTemplate(
 }
 
 export async function sendMotivationalEmail(to: string, nombre: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://user-manager-app-weld.vercel.app"
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://user-manager-app-weld.vercel.app"
 
   const mailOptions = {
     from: `"User Manager" <${process.env.GMAIL_USER}>`,
@@ -211,9 +211,9 @@ function buildMotivationalTemplate(nombre: string, appUrl: string): string {
               <table cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="border-radius:8px;background:#0ea5e9;">
-                    <a href="${appUrl}"
+                    <a href="${appUrl}/login"
                        style="display:inline-block;padding:14px 32px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#ffffff;text-decoration:none;">
-                      Ir a Estudiar Ahora
+                      Vamos por más
                     </a>
                   </td>
                 </tr>
